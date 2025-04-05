@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  yaml_backend:
+    container_name: yaml_backend
+    image: yaml_backend:latest
+    build:
+      context: .  # Path to your Dockerfile for the web service
+    ports:
+      - "8000:8000"  # Maps port 8080 on your host to port 80 in the container
+    environment:
+      DATABASE_URL: postgresql://admin:admin@yaml_sql_db/yaml_db
+    volumes:
+      - ./backend:/yaml_backend/backend
+    depends_on:
+      - yaml_sql_db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  
+  yaml_sql_db:
+    image: postgres:13
+    container_name: yaml_sql_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: yaml_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
